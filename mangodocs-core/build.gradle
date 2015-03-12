@@ -1,6 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 
+
+apply from: "$rootDir/gradle/mapstruct.gradle"
+
 configurations {
   testArtifacts.extendsFrom testRuntime
 }
@@ -8,6 +11,7 @@ configurations {
 task testJar(type: Jar) {
   classifier "test"
   from sourceSets.test.output
+  exclude '**/*log4j.xml*', '**/*simplelogger.properties*'
 }
 
 artifacts {
@@ -20,4 +24,26 @@ dependencies {
   compile libs.clientProvided
   testCompile libs.test
 
+}
+
+publishing {
+  repositories {
+    configure(releaseRepos)
+  }
+  publications {
+    models(MavenPublication) {
+      from components.java
+
+
+      artifact packageSources {
+        classifier "sources"
+      }
+
+      artifact (javadocJar) {
+        classifier = 'javadoc'
+      }
+
+      pom.withXml mangodocsPomConfig
+    }
+  }
 }
